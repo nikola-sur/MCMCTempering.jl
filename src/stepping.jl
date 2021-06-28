@@ -52,6 +52,11 @@ mutable struct TemperedState
     Δ_index_history :: Array{<:Integer, 2}
     Ρ               :: Vector{AdaptiveState}
 end
+function new_tempered_state(states, Δ, Ρ)
+    return TemperedState(
+        states, Δ, Δ_init, sortperm(Δ_init), 1, 1, Array{Real, 2}(Δ'), Array{Integer, 2}(Δ_init'), Ρ
+    )
+end
 
 
 """
@@ -69,17 +74,14 @@ function AbstractMCMC.step(
         AbstractMCMC.step(
             rng,
             make_tempered_model(model, spl.Δ[spl.Δ_init[i]]),
-            spl.internal_sampler;
+            spl.internal_sampler[spl.Δ_init[i]];
             kwargs...
         )
         for i in 1:length(spl.Δ)
     ]
-    return (
-        states[sortperm(spl.Δ_init)[1]][1],
-        TemperedState(
-            states,spl.Δ, spl.Δ_init, sortperm(spl.Δ_init), 1, 1, Array{Real, 2}(spl.Δ'), Array{Integer, 2}(spl.Δ_init'), spl.Ρ
-        )
-    )
+    ts = new_tempered_state(states, spl.Δ, spl.Δ_init, spl.Ρ)
+    # first return component is always the state associated with the target distribution chain (β = 1.0)
+    return ts.states[ts.chain_index[1]][1], ts
 end
 function AbstractMCMC.step(
     rng::Random.AbstractRNG,
@@ -96,7 +98,7 @@ function AbstractMCMC.step(
             AbstractMCMC.step(
                 rng,
                 make_tempered_model(model, ts.Δ[ts.Δ_index[i]]),
-                spl.internal_sampler,
+                spl.internal_sampler[ts.Δ_index[i]],
                 ts.states[i][2];
                 kwargs...
             )

@@ -74,5 +74,10 @@ function tempered(
     length(Δ) > 1 || error("More than one inverse temperatures must be provided.")
     N_swap >= 1 || error("This must be a positive integer.")
     Ρ = init_adaptation(Δ, adapt_target, adapt_scale, adapt_step)
-    return TemperedSampler(internal_sampler, Δ, Δ_init, N_swap, swap_strategy, adapt, Ρ)
+    return TemperedSampler(clone_is(internal_sampler), Δ, Δ_init, N_swap, swap_strategy, adapt, Ρ)
+end
+
+
+function clone_is(internal_sampler)
+    return [deepcopy(internal_sampler) for i in 1:length(Δ)]
 end

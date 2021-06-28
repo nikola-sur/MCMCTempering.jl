@@ -39,6 +39,8 @@ n_samples, n_adapts = 2_000, 1_000
 ℓlikelihood(θ) = logpdf(MvNormal(zeros(D), ones(D)), θ)
 ∂ℓprior∂θ(θ) = (ℓprior(θ), ForwardDiff.gradient(ℓprior, θ))
 ∂ℓlikelihood∂θ(θ) = (ℓlikelihood(θ), ForwardDiff.gradient(ℓlikelihood, θ))
+
+
 model = DifferentiableDensityModel(
     Joint(ℓprior, ℓlikelihood),
     Joint(∂ℓprior∂θ, ∂ℓlikelihood∂θ)
