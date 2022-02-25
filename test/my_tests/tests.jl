@@ -9,6 +9,7 @@ using AdvancedHMC
 using Random
 using Distributions
 using ForwardDiff
+using Plots
 
 # Choose parameter dimensionality and initial parameter value
 D = 10; initial_θ = rand(D)
@@ -34,3 +35,6 @@ adaptor = StanHMCAdaptor(MassMatrixAdaptor(metric), StepSizeAdaptor(0.8, integra
 
 sampler = AdvancedHMC.HMCSampler(proposal, metric, adaptor)
 chain = MCMCTempering.sample(model, MCMCTempering.tempered(sampler, 4), n_samples; discard_initial = n_adapts)
+
+samples = map((x) -> chain[x].z.θ, 1:length(chain))
+Plots.histogram(map((x) -> samples[x][1], 1:length(samples))) # Doesn't seem to be mixing well at the moment!
