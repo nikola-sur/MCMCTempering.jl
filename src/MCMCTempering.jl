@@ -3,6 +3,8 @@ module MCMCTempering
 import AbstractMCMC
 import Distributions
 import Random
+import AdvancedMH
+import AdvancedHMC
 
 using ConcreteStructs: @concrete
 using Setfield: @set, @set!

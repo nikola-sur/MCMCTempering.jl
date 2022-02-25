@@ -71,7 +71,30 @@ end
 Return `(logπ(transition, β), logπ(transition_other, β))` where `logπ(x, β)` denotes the
 log-density for `model` with inverse-temperature `β`.
 """
-function compute_tempered_logdensities end
+function compute_tempered_logdensities(
+    model::AdvancedHMC.DifferentiableDensityModel,
+    sampler,
+    transition::AdvancedHMC.Transition,
+    transition_other::AdvancedHMC.Transition,
+    β
+)
+    lp = β * transition.stat.log_density
+    lp_other = β * transition_other.stat.log_density
+    return lp, lp_other
+end
+
+function compute_tempered_logdensities(
+    model::AdvancedMH.DensityModel,
+    sampler,
+    transition::AdvancedMH.Transition,
+    transition_other::AdvancedMH.Transition,
+    β
+)
+    lp = β * AdvancedMH.logdensity(model, transition.params)
+    lp_other = β * AdvancedMH.logdensity(model, transition_other.params)
+    return lp, lp_other
+end
+
 
 """
     swap_acceptance_pt(logπk, logπkp1)
