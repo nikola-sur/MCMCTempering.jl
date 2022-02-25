@@ -15,13 +15,20 @@ include("tempered.jl")
 include("ladders.jl")
 include("stepping.jl")
 include("model.jl")
+include("tempering.jl")
 
 export tempered,
     TemperedSampler,
     make_tempered_model,
     StandardSwap,
     RandomPermutationSwap,
-    NonReversibleSwap
+    NonReversibleSwap,
+    Joint, 
+    TemperedJoint, 
+    make_tempered_model, 
+    make_tempered_loglikelihood, 
+    get_params, 
+    step
 
 function AbstractMCMC.bundle_samples(
     ts::Vector,
