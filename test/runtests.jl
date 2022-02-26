@@ -1,4 +1,6 @@
-using MCMCTempering
+include("../src/MCMCTempering.jl")
+
+using .MCMCTempering
 using Test
 using Distributions
 using AdvancedMH
@@ -51,7 +53,7 @@ include("compat.jl")
 
         @testset "$(swapstrategy)" for swapstrategy in swapstrategies
             swapstrategy = swapstrategies[1]
-            spl = tempered(spl_inner, inverse_temperatures, swapstrategy; adapt=false, swap_every=swap_every)
+            spl = MCMCTempering.tempered(spl_inner, inverse_temperatures, swapstrategy; adapt=false, swap_every=swap_every)
 
             # Useful for analysis.
             states = []
@@ -107,7 +109,7 @@ include("compat.jl")
             σ = desc.std
 
             # `StandardSwap` is quite unreliable, so struggling to come up with reasonable tests.
-            if !(swapstrategy isa StandardSwap)
+            if !(swapstrategy isa MCMCTempering.StandardSwap)
                 # HACK: These bounds are quite generous. We're swapping quite frequently here
                 # so some of the strategies results in a rather large variance of the estimators
                 # it seems.
