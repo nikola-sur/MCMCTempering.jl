@@ -234,28 +234,28 @@ function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:Inver
     return Δ
 end
 
-# function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:GCB}}, Δ_current, state::TemperedState)
-#     Δ = similar(Δ_current)
-#     N = length(Δ)
-#     @assert length(ρs) ≥ N - 1 "number of adaptive states < number of temperatures"
+function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:GCB}}, Δ_current, rejections, total_steps)
+    Δ = similar(Δ_current)
+    N = length(Δ)
+    @assert length(ρs) ≥ N - 1 "number of adaptive states < number of temperatures"
 
-#     β₀ = Δ_current[1]
-#     Δ[1] = β₀
+    β₀ = Δ_current[1]
+    Δ[1] = β₀
 
-#     # Calculate rejection rates
-#     rr = state.rejections ./ stat.total_steps
-#     # ^ This is probably not right, because we should maybe divide by stat.total_steps/2 or something (?)
-#     # Create spline based on rejection rates
-#     Λ_fun = get_communication_barrier(rr, Δ_current)
+    # Calculate rejection rates
+    rr = rejections ./ total_steps
+    # ^ This is probably not right, because we should maybe divide by stat.total_steps/2 or something (?)
+    # Create spline based on rejection rates
+    Λ_fun = get_communication_barrier(rr, Δ_current)
 
 
-#     # T = inv(β₀)
-#     # for ℓ in 1:N - 1
-#     #     T += weight(ρs[ℓ])
-#     #     @inbounds Δ[ℓ + 1] = inv(T)
-#     # end
-#     return Δ
-# end
+    # T = inv(β₀)
+    # for ℓ in 1:N - 1
+    #     T += weight(ρs[ℓ])
+    #     @inbounds Δ[ℓ + 1] = inv(T)
+    # end
+    return Δ
+end
 
 function get_communication_barrier(rr, Δ_current)
     x = Δ_current
