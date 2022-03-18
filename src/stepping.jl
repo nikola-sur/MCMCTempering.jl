@@ -300,6 +300,9 @@ function swap_step(
         # but with the current one: shouldn't we at least divide `state.total_steps` by 2 since it will
         # take use two swap-attempts before we have tried swapping all of them (in expectation).
         state = swap_attempt(rng, model, sampler, state, k, sampler.adapt, state.total_steps)
+        # if (floor(log2(state.total_steps)) == log2(state.total_steps)) && (state.total_steps >= 64)
+        #     @set! state.rejections = [0 for _ in 1:length(state.rejections)]
+        # end
     end
     return state
 end
