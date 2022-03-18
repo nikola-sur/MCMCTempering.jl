@@ -1,5 +1,4 @@
 using Distributions: StatsFuns
-# include("tempered.jl")
 
 @concrete struct PolynomialStep
     η
@@ -239,25 +238,25 @@ function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:GCB}}
     N = length(Δ)
     @assert length(ρs) ≥ N - 1 "number of adaptive states < number of temperatures"
 
-    β₀ = Δ_current[1]
-    Δ[1] = β₀
+    Δ[1] = 0.0
+    Δ[N] = 1.0
 
     # Calculate rejection rates
     rr = rejections ./ total_steps
     # ^ This is probably not right, because we should maybe divide by stat.total_steps/2 or something (?)
     # Create spline based on rejection rates
     Λ_fun = get_communication_barrier(rr, Δ_current)
-
-
-    # T = inv(β₀)
-    # for ℓ in 1:N - 1
-    #     T += weight(ρs[ℓ])
-    #     @inbounds Δ[ℓ + 1] = inv(T)
-    # end
+    Λ = Λ_fun(1)
+    
+    for n in 2:(N-1)
+        f(x) = Λ_fun(x) - (n-1)*Λ/(N-1)
+        Δ[n] = Roots.find_zero(f, (0.0, 1.0), Bisection())
+    end
     return Δ
 end
 
 function get_communication_barrier(rr, Δ_current)
+    # Based on the code from our package
     x = Δ_current
     y = [0; cumsum(rr)]
     spline = Interpolations.interpolate(x, y, FritschCarlsonMonotonicInterpolation())
