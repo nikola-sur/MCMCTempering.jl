@@ -137,6 +137,7 @@ function swap_attempt(rng, model, sampler, state, k, adapt, total_steps)
 
     # Adaptation steps affects `ρs` and `inverse_temperatures`, as the `ρs` is
     # adapted before a new `inverse_temperatures` is generated and returned.
+    # TODO: Work here!!!
     if adapt
         ρs = adapt!!(
             state.adaptation_states, state.inverse_temperatures,
