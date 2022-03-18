@@ -245,7 +245,9 @@ function update_inverse_temperatures_GCB(ρs::AbstractVector{<:AdaptiveState{<:I
     rr = rejections ./ total_steps
     if total_steps <= 64
         Δ_current = reverse(collect(0.0:(1/(length(Δ_current)-1)):1.0)) # Just pretend that we don't know what Δ_current is for the first round
+        rr = [0.1 for _ in 1:length(Δ)] # Same for 'rr'
     end
+    
     # ^ This is probably not right, because we should maybe divide by stat.total_steps/2 or something (?)
     # Create spline based on rejection rates
     Λ_fun = get_communication_barrier(rr, Δ_current)
@@ -261,7 +263,8 @@ end
 function get_communication_barrier(rr, Δ_current)
     # Based on the code from our package
     x = reverse(Δ_current)
-    y = cumsum(rr)
+    rr_cumsum = cumsum(rr)
+    y = [0.0; rr_cumsum[1:(end-1)]]
     println(x)
     println(y)
     spline = Interpolations.interpolate(x, y, Interpolations.FritschCarlsonMonotonicInterpolation())

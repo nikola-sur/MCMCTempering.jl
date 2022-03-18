@@ -147,8 +147,11 @@ function swap_attempt(rng, model, sampler, state, k, adapt, total_steps)
             k, min(one(logα), exp(logα)), total_steps
         )
         @set! state.adaptation_states = ρs
-        if (sampler.swap_strategy == NonReversibleSwap()) && (state.total_steps >= 64)
-            @set! state.inverse_temperatures = update_inverse_temperatures_GCB(ρs, state.inverse_temperatures, state.rejections, state.total_steps)
+        if (sampler.swap_strategy == NonReversibleSwap()) 
+            if (state.total_steps >= 64) && (floor(log2(state.total_steps)) == log2(state.total_steps))
+                @set! state.inverse_temperatures = update_inverse_temperatures_GCB(ρs, state.inverse_temperatures, state.rejections, state.total_steps)
+                # @set! state.rejections = [0.0 for _ in 1:length(state.inverse_temperatures)]
+            end
         else
             @set! state.inverse_temperatures = update_inverse_temperatures(ρs, state.inverse_temperatures, state.rejections, state.total_steps)
         end
