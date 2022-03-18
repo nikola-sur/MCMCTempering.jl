@@ -204,7 +204,7 @@ which is adapted by `ρ`.
 If `ρ` is a `AbstractVector`, then it should be of length `length(Δ_current) - 1`,
 with `ρ[k]` corresponding to the adaptation state for the `k`-th inverse temperature.
 """
-function update_inverse_temperatures(ρ::AdaptiveState{<:InverselyAdditive}, Δ_current)
+function update_inverse_temperatures(ρ::AdaptiveState{<:InverselyAdditive}, Δ_current, rejections, total_steps)
     Δ = similar(Δ_current)
     β₀ = Δ_current[1]
     Δ[1] = β₀
@@ -217,7 +217,7 @@ function update_inverse_temperatures(ρ::AdaptiveState{<:InverselyAdditive}, Δ_
     return Δ
 end
 
-function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:InverselyAdditive}}, Δ_current)
+function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:InverselyAdditive}}, Δ_current, rejections, total_steps)
     Δ = similar(Δ_current)
     N = length(Δ)
     @assert length(ρs) ≥ N - 1 "number of adaptive states < number of temperatures"
@@ -233,33 +233,38 @@ function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:Inver
     return Δ
 end
 
-function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:GCB}}, Δ_current, rejections, total_steps)
-    Δ = similar(Δ_current)
+function update_inverse_temperatures_GCB(ρs::AbstractVector{<:AdaptiveState{<:InverselyAdditive}}, Δ_current, rejections, total_steps)
+    Δ = zeros(length(Δ_current))
     N = length(Δ)
     @assert length(ρs) ≥ N - 1 "number of adaptive states < number of temperatures"
 
-    Δ[1] = 0.0
-    Δ[N] = 1.0
+    Δ[N] = 0.0
+    Δ[1] = 1.0
 
     # Calculate rejection rates
     rr = rejections ./ total_steps
+    if total_steps <= 64
+        Δ_current = reverse(collect(0.0:(1/(length(Δ_current)-1)):1.0)) # Just pretend that we don't know what Δ_current is for the first round
+    end
     # ^ This is probably not right, because we should maybe divide by stat.total_steps/2 or something (?)
     # Create spline based on rejection rates
     Λ_fun = get_communication_barrier(rr, Δ_current)
     Λ = Λ_fun(1)
     
     for n in 2:(N-1)
-        f(x) = Λ_fun(x) - (n-1)*Λ/(N-1)
-        Δ[n] = Roots.find_zero(f, (0.0, 1.0), Bisection())
+        f(x) = Λ_fun(x) - (N-n)*Λ/(N-1)
+        Δ[n] = Roots.find_zero(f, (0.0, 1.0), Roots.Bisection())
     end
     return Δ
 end
 
 function get_communication_barrier(rr, Δ_current)
     # Based on the code from our package
-    x = Δ_current
-    y = [0; cumsum(rr)]
-    spline = Interpolations.interpolate(x, y, FritschCarlsonMonotonicInterpolation())
+    x = reverse(Δ_current)
+    y = cumsum(rr)
+    println(x)
+    println(y)
+    spline = Interpolations.interpolate(x, y, Interpolations.FritschCarlsonMonotonicInterpolation())
     Λ_fun(β) = spline(β)
     return Λ_fun
 end

@@ -141,14 +141,17 @@ function swap_attempt(rng, model, sampler, state, k, adapt, total_steps)
 
     # Adaptation steps affects `ρs` and `inverse_temperatures`, as the `ρs` is
     # adapted before a new `inverse_temperatures` is generated and returned.
-    # TODO: Work here!!!
     if adapt
         ρs = adapt!!(
             state.adaptation_states, state.inverse_temperatures,
             k, min(one(logα), exp(logα)), total_steps
         )
         @set! state.adaptation_states = ρs
-        @set! state.inverse_temperatures = update_inverse_temperatures(ρs, state.inverse_temperatures)
+        if (sampler.swap_strategy == NonReversibleSwap()) && (state.total_steps >= 64)
+            @set! state.inverse_temperatures = update_inverse_temperatures_GCB(ρs, state.inverse_temperatures, state.rejections, state.total_steps)
+        else
+            @set! state.inverse_temperatures = update_inverse_temperatures(ρs, state.inverse_temperatures, state.rejections, state.total_steps)
+        end
     end
     return state
 end

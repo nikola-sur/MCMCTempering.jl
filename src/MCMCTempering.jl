@@ -5,6 +5,8 @@ import Distributions
 import Random
 import AdvancedMH
 import AdvancedHMC
+import Interpolations
+import Roots
 
 using ConcreteStructs: @concrete
 using Setfield: @set, @set!

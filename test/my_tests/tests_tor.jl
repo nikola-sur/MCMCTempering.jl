@@ -31,7 +31,7 @@ n_chains = 10
 swapstrategy = MCMCTempering.NonReversibleSwap()
 inverse_temperatures = collect(range(0.0, 1.0, length = n_chains))
 spl_inner = RWMH(MvNormal(zeros(d), 1e-1I)) # Set up our sampler with a joint multivariate Normal proposal
-spl = MCMCTempering.tempered(spl_inner, inverse_temperatures, swapstrategy; adapt=false, swap_every=swap_every)
+spl = MCMCTempering.tempered(spl_inner, inverse_temperatures, swapstrategy; adapt=true, swap_every=swap_every)
 
 
 # Start analysis ---
