@@ -1,4 +1,5 @@
 using Distributions: StatsFuns
+# include("tempered.jl")
 
 @concrete struct PolynomialStep
     η
@@ -27,6 +28,17 @@ See also: [`AdaptiveState`](@ref), [`update_inverse_temperatures`](@ref), and
 [`weight`](@ref).
 """
 struct InverselyAdditive end
+
+"""
+    GCB
+
+Specifies a GCB-based schedule for the inverse temperatures.
+
+See also: [`AdaptiveState`](@ref), [`update_inverse_temperatures`](@ref), and
+[`weight`](@ref).
+"""
+struct GCB end
+
 
 struct AdaptiveState{S,T1<:Real,T2<:Real,P<:PolynomialStep}
     schedule_type::S
@@ -183,6 +195,7 @@ end
 """
     update_inverse_temperatures(ρ::AdaptiveState{<:InverselyAdditive}, Δ_current)
     update_inverse_temperatures(ρ::AbstractVector{<:AdaptiveState{<:InverselyAdditive}}, Δ_current)
+    update_inverse_temperatures(ρ::AbstractVector{<:AdaptiveState{<:GCB}}, Δ_current, state)
 
 Return updated inverse temperatures computed from adaptation state(s) and `Δ_current`.
 
@@ -219,4 +232,35 @@ function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:Inver
         @inbounds Δ[ℓ + 1] = inv(T)
     end
     return Δ
+end
+
+# function update_inverse_temperatures(ρs::AbstractVector{<:AdaptiveState{<:GCB}}, Δ_current, state::TemperedState)
+#     Δ = similar(Δ_current)
+#     N = length(Δ)
+#     @assert length(ρs) ≥ N - 1 "number of adaptive states < number of temperatures"
+
+#     β₀ = Δ_current[1]
+#     Δ[1] = β₀
+
+#     # Calculate rejection rates
+#     rr = state.rejections ./ stat.total_steps
+#     # ^ This is probably not right, because we should maybe divide by stat.total_steps/2 or something (?)
+#     # Create spline based on rejection rates
+#     Λ_fun = get_communication_barrier(rr, Δ_current)
+
+
+#     # T = inv(β₀)
+#     # for ℓ in 1:N - 1
+#     #     T += weight(ρs[ℓ])
+#     #     @inbounds Δ[ℓ + 1] = inv(T)
+#     # end
+#     return Δ
+# end
+
+function get_communication_barrier(rr, Δ_current)
+    x = Δ_current
+    y = [0; cumsum(rr)]
+    spline = Interpolations.interpolate(x, y, FritschCarlsonMonotonicInterpolation())
+    Λ_fun(β) = spline(β)
+    return Λ_fun
 end
