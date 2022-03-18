@@ -131,8 +131,12 @@ function swap_attempt(rng, model, sampler, state, k, adapt, total_steps)
     # If the proposed temperature swap is accepted according `logα`,
     # swap the temperatures for future steps.
     logα = swap_acceptance_pt(logπk_θk, logπk_θkp1, logπkp1_θk, logπkp1_θkp1)
-    if -Random.randexp(rng) ≤ logα
+    if -Random.randexp(rng) ≤ logα # Perform the swap
         swap_betas!(state.chain_to_process, state.process_to_chain, k)
+    else # Rejection
+        rejections_new = state.rejections
+        rejections_new[k] += 1
+        @set! state.rejections = rejections_new
     end
 
     # Adaptation steps affects `ρs` and `inverse_temperatures`, as the `ρs` is

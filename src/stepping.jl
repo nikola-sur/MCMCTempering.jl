@@ -74,7 +74,7 @@ The indices here are exactly those represented by `states[k].chain_to_process[1]
     total_steps
     "contains all necessary information for adaptation of inverse_temperatures"
     adaptation_states
-    "rejections in the newest tuning round (vector of zeros and ones)"
+    "rejections in the newest tuning round (total counts, one for each state)"
     rejections
 end
 
