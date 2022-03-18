@@ -25,7 +25,7 @@ model = DensityModel(logdensity)
 
 
 # Sampler settings ---
-nsamples = 20_000
+nsamples = 2000
 swap_every = 2
 n_chains = 10
 swapstrategy = MCMCTempering.NonReversibleSwap()

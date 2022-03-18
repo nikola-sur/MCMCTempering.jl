@@ -21,6 +21,8 @@ $(FIELDS)
     adapt
     "adaptation parameters"
     adaptation_states
+    "rejections in the newest tuning round (vector of zeros and ones)"
+    rejections
 end
 
 swapstrategy(sampler::TemperedSampler) = sampler.swap_strategy
@@ -90,5 +92,6 @@ function tempered(
     adaptation_states = init_adaptation(
         adapt_schedule, inverse_temperatures, adapt_target, inv(adapt_scale), adapt_step
     )
-    return TemperedSampler(sampler, inverse_temperatures, swap_every, swap_strategy, adapt, adaptation_states)
+    rejections = [0]
+    return TemperedSampler(sampler, inverse_temperatures, swap_every, swap_strategy, adapt, adaptation_states, rejections)
 end
