@@ -265,7 +265,7 @@ function get_communication_barrier(rr, Δ_current)
     x = reverse(Δ_current)
     rr_cumsum = cumsum(rr)
     y = [0.0; rr_cumsum[1:(end-1)]]
-    println(x)
+    # println(x)
     # println(y)
     spline = Interpolations.interpolate(x, y, Interpolations.FritschCarlsonMonotonicInterpolation())
     Λ_fun(β) = spline(β)
