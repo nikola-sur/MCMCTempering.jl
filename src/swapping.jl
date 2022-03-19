@@ -137,7 +137,7 @@ function swap_attempt(rng, model, sampler, state, k, adapt, total_steps)
 
     # Update rejection estimates
     rejections_new = state.rejections
-    rejections_new[k] += min(1.0, exp(logα))
+    rejections_new[k] += 1.0 - min(1.0, exp(logα))
     @set! state.rejections = rejections_new
 
     # Adaptation steps affects `ρs` and `inverse_temperatures`, as the `ρs` is
