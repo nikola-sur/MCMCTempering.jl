@@ -243,8 +243,8 @@ function update_inverse_temperatures_GCB(ρs::AbstractVector{<:AdaptiveState{<:I
 
     # Calculate rejection rates
     rr = rejections ./ (total_steps/2)
-    # ^ Not correct (!)
-    # The proper way would be to define the 'rejections' vector as in the original NRPT code where the r_i's reset to zero on a new tuning round
+    # ^ Not entirely correct (!)
+    # The proper way would be to keep track of how many steps in this tuning round. However, total_steps/2 = total_steps_this_round for exponential tuning
     # This is the easiest thing to do at the moment, though.
     if total_steps <= 64
         Δ_current = reverse(collect(0.0:(1/(length(Δ_current)-1)):1.0)) # Just pretend that we don't know what Δ_current is for the first round
