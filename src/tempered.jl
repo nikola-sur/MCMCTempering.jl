@@ -92,6 +92,6 @@ function tempered(
     adaptation_states = init_adaptation(
         adapt_schedule, inverse_temperatures, adapt_target, inv(adapt_scale), adapt_step
     )
-    rejections = [0 for _ in 1:length(inverse_temperatures)]
+    rejections = [0.0 for _ in 1:length(inverse_temperatures)]
     return TemperedSampler(sampler, inverse_temperatures, swap_every, swap_strategy, adapt, adaptation_states, rejections)
 end

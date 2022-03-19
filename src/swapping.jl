@@ -133,11 +133,12 @@ function swap_attempt(rng, model, sampler, state, k, adapt, total_steps)
     logα = swap_acceptance_pt(logπk_θk, logπk_θkp1, logπkp1_θk, logπkp1_θkp1)
     if -Random.randexp(rng) ≤ logα # Perform the swap
         swap_betas!(state.chain_to_process, state.process_to_chain, k)
-    else # Rejection
-        rejections_new = state.rejections
-        rejections_new[k] += 1
-        @set! state.rejections = rejections_new
     end
+
+    # Update rejection estimates
+    rejections_new = state.rejections
+    rejections_new[k] += min(1.0, exp(logα))
+    @set! state.rejections = rejections_new
 
     # Adaptation steps affects `ρs` and `inverse_temperatures`, as the `ρs` is
     # adapted before a new `inverse_temperatures` is generated and returned.
@@ -150,10 +151,6 @@ function swap_attempt(rng, model, sampler, state, k, adapt, total_steps)
         if (sampler.swap_strategy == NonReversibleSwap()) 
             if (state.total_steps >= 64) && (floor(log2(state.total_steps)) == log2(state.total_steps))
                 @set! state.inverse_temperatures = update_inverse_temperatures_GCB(ρs, state.inverse_temperatures, state.rejections, state.total_steps)
-                # N = length(state.inverse_temperatures)
-                # if k in [N-2, N-1, N]
-                #     @set! state.rejections = [0 for _ in 1:N]
-                # end
             end
         else
             @set! state.inverse_temperatures = update_inverse_temperatures(ρs, state.inverse_temperatures, state.rejections, state.total_steps)

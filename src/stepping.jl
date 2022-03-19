@@ -227,6 +227,11 @@ function AbstractMCMC.step(
     end
 
     @set! state.total_steps += 1
+
+    if (floor(log2(state.total_steps-1)) == log2(state.total_steps-1)) && (state.total_steps >= 64)
+        @set! state.rejections = [0.0 for _ in 1:length(state.inverse_temperatures)]
+    end
+
     # We want to return the transition for the _first_ chain, i.e. the chain usually corresponding to `β=1.0`.
     return transition_for_chain(state), state
 end

@@ -242,13 +242,15 @@ function update_inverse_temperatures_GCB(ρs::AbstractVector{<:AdaptiveState{<:I
     Δ[1] = 1.0
 
     # Calculate rejection rates
-    rr = rejections ./ total_steps
+    rr = rejections ./ (total_steps/2)
+    # ^ Not correct (!)
+    # The proper way would be to define the 'rejections' vector as in the original NRPT code where the r_i's reset to zero on a new tuning round
+    # This is the easiest thing to do at the moment, though.
     if total_steps <= 64
         Δ_current = reverse(collect(0.0:(1/(length(Δ_current)-1)):1.0)) # Just pretend that we don't know what Δ_current is for the first round
         rr = [0.1 for _ in 1:length(Δ)] # Same for 'rr'
     end
     
-    # ^ This is probably not right, because we should maybe divide by stat.total_steps/2 or something (?)
     # Create spline based on rejection rates
     Λ_fun = get_communication_barrier(rr, Δ_current)
     Λ = Λ_fun(1)

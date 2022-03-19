@@ -18,7 +18,7 @@ function MCMCTempering.compute_tempered_logdensities(
 )
     # Just re-use computation from transition.
     # lp = transition.lp
-    lp = β * AdvancedMH.logdensity(model, transition.params)
+    lp = β * AdvancedMH.logdensity(model, transition.params) # This doesn't seem right!!
     # Compute for the other.
     lp_other = β * AdvancedMH.logdensity(model, transition_other.params)
     return lp, lp_other
